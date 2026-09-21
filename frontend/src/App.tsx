@@ -11,7 +11,7 @@ import Assets from './pages/Assets';
 import SettingsPage from './pages/Settings';
 import Login from './pages/Login';
 import { getMe, changePassword, onUnauthorized } from './services/api';
-import { useLang } from './i18n';
+import { useLang } from './i18n/index';
 
 function Shell({ role, username, onLogout }: { role: string; username: string; onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createEngagement, runEngagement } from '../services/api';
 import { Shield, Server, Key, Loader2, Brain, FileText } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 export default function NewScan() {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { getEngagement, getFindings, getSessions, getActions, getReports, getPhases } from '../services/api';
 import { Shield, CheckCircle, AlertTriangle, XCircle, Clock, ChevronDown, ChevronRight, Search } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 export default function ScanDetail() {
   const { id } = useParams<{ id: string }>();
@@ -96,12 +96,12 @@ export default function ScanDetail() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-dark-600">
-        {(['findings', 'phases', 'agent', 'report'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {(['findings', 'phases', 'agent', 'report'] as const).map(tabKey => (
+          <button key={tabKey} onClick={() => setTab(tabKey)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === t ? 'border-neon-green text-neon-green' : 'border-transparent text-dark-400 hover:text-white'
+              tab === tabKey ? 'border-neon-green text-neon-green' : 'border-transparent text-dark-400 hover:text-white'
             }`}>
-            {t === 'findings' ? `${t('findings')} (${findings.length})` : t === 'phases' ? t('phases') : t === 'agent' ? t('agentSessions') : t('report')}
+            {tabKey === 'findings' ? `${t('findings')} (${findings.length})` : tabKey === 'phases' ? t('phases') : tabKey === 'agent' ? t('agentSessions') : t('report')}
           </button>
         ))}
       </div>

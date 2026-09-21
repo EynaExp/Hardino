@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listAssets, getAsset, updateAssetNotes, deleteAsset } from '../services/api';
 import { Server, Search, Eye, Trash2, StickyNote, X, ExternalLink } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 export default function Assets() {
   const [assets, setAssets] = useState<any[]>([]);

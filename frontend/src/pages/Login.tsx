@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { login } from '../services/api';
 import { Shield } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 export default function Login({ onLogin }: { onLogin: (role: string, username: string) => void }) {
   const [username, setUsername] = useState('');

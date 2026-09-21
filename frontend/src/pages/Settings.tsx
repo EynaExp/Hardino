@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getLLMSettings, updateLLMSettings, testLLMConnection } from '../services/api';
 import { Settings as SettingsIcon, Check, AlertTriangle, Loader2 } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 const PROVIDERS: Record<string, { name: string; baseUrl: string; models: string[] }> = {
   openrouter: { name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', models: ['xiaomi/mimo-v2.5', 'google/gemini-2.0-flash', 'openai/gpt-4o-mini'] },

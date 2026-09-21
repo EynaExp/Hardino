@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats, listEngagements, deleteEngagement } from '../services/api';
 import { Shield, Activity, AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
-import { useLang } from '../i18n';
+import { useLang } from '../i18n/index';
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
