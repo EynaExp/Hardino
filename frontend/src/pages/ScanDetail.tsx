@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { getEngagement, getFindings, getSessions, getActions, getReports, getPhases } from '../services/api';
 import { Shield, CheckCircle, AlertTriangle, XCircle, Clock, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { useLang } from '../i18n';
 
 export default function ScanDetail() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLang();
   const [engagement, setEngagement] = useState<any>(null);
   const [findings, setFindings] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -84,7 +86,7 @@ export default function ScanDetail() {
         <div>
           <h1 className="text-2xl font-bold text-white">{engagement.name}</h1>
           <p className="text-dark-400 text-sm mt-1">
-            {engagement.target_scope?.[0]?.host || 'Unknown target'} • Created {new Date(engagement.created_at).toLocaleString()}
+            {engagement.target_scope?.[0]?.host || t('unknownTarget')} • {t('created')} {new Date(engagement.created_at).toLocaleString()}
           </p>
         </div>
         <span className={`px-3 py-1 rounded-full text-sm status-${engagement.status}`}>
@@ -99,7 +101,7 @@ export default function ScanDetail() {
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === t ? 'border-neon-green text-neon-green' : 'border-transparent text-dark-400 hover:text-white'
             }`}>
-            {t === 'findings' ? `Findings (${findings.length})` : t === 'phases' ? 'Phases' : t === 'agent' ? 'Agent Sessions' : 'Report'}
+            {t === 'findings' ? `${t('findings')} (${findings.length})` : t === 'phases' ? t('phases') : t === 'agent' ? t('agentSessions') : t('report')}
           </button>
         ))}
       </div>
@@ -110,28 +112,28 @@ export default function ScanDetail() {
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
-              <input type="text" placeholder="Search findings..." value={findingsSearch} onChange={e => setFindingsSearch(e.target.value)}
+              <input type="text" placeholder={t('searchFindings')} value={findingsSearch} onChange={e => setFindingsSearch(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
             </div>
             <select value={findingsSort} onChange={e => setFindingsSort(e.target.value as any)}
               className="px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none">
-              <option value="severity">Sort by Severity</option>
-              <option value="category">Sort by Category</option>
-              <option value="id">Sort by ID</option>
+              <option value="severity">{t('sortBySeverity')}</option>
+              <option value="category">{t('sortByCategory')}</option>
+              <option value="id">{t('sortByID')}</option>
             </select>
             <span className="text-xs text-dark-400 whitespace-nowrap">{filteredFindings.length}/{findings.length}</span>
           </div>
           <div className="glass-card rounded-xl overflow-hidden">
-            {filteredFindings.length === 0 && <div className="p-4 text-dark-400 text-sm">No findings match your search.</div>}
+            {filteredFindings.length === 0 && <div className="p-4 text-dark-400 text-sm">{t('noFindingsMatch')}</div>}
             {filteredFindings.length > 0 && (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-dark-600 text-left">
                     <th className="px-4 py-3 text-dark-400 font-medium">ID</th>
-                    <th className="px-4 py-3 text-dark-400 font-medium">Severity</th>
-                    <th className="px-4 py-3 text-dark-400 font-medium">Category</th>
-                    <th className="px-4 py-3 text-dark-400 font-medium">Finding</th>
-                    <th className="px-4 py-3 text-dark-400 font-medium">Remediation</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">{t('sortBySeverity')}</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">{t('sortByCategory')}</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">{t('findings')}</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">{t('remediation')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -223,12 +225,12 @@ export default function ScanDetail() {
           {reportData ? (
             <>
               <div className="glass-card rounded-xl p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-white">Hardening Score</h3>
-                  {reportData.ai_analysis_enabled === false && (
-                    <span className="text-xs px-2 py-1 rounded bg-dark-600 text-dark-300">AI Analysis Off</span>
-                  )}
-                </div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-white">{t('hardeningScore')}</h3>
+            {reportData.ai_analysis_enabled === false && (
+              <span className="text-xs px-2 py-1 rounded bg-dark-600 text-dark-300">{t('aiAnalysisOff')}</span>
+            )}
+          </div>
                 <div className="flex items-center gap-4">
                   <div className={`text-5xl font-bold ${
                     reportData.summary.hardening_score >= 80 ? 'text-neon-green' :
@@ -237,7 +239,7 @@ export default function ScanDetail() {
                     {reportData.summary.hardening_score}%
                   </div>
                   <div className="space-y-1 text-sm">
-                    <div className="text-dark-300">{reportData.summary.passed}/{reportData.summary.total_checks} checks passed</div>
+                    <div className="text-dark-300">{reportData.summary.passed}/{reportData.summary.total_checks} {t('checksPassed')}</div>
                     <div className="text-neon-red">Critical: {reportData.summary.critical}</div>
                     <div className="text-neon-orange">High: {reportData.summary.high}</div>
                     <div className="text-neon-yellow">Medium: {reportData.summary.medium}</div>
@@ -246,13 +248,13 @@ export default function ScanDetail() {
                 </div>
               </div>
               <div className="glass-card rounded-xl p-5">
-                <h3 className="font-semibold text-white mb-2">Summary</h3>
+                <h3 className="font-semibold text-white mb-2">{t('findings')}</h3>
                 <p className="text-dark-300 text-sm">Target: {reportData.target}</p>
                 <p className="text-dark-300 text-sm">Total findings: {reportData.summary.total_findings}</p>
               </div>
             </>
           ) : (
-            <div className="text-dark-400 text-sm">Report not yet available.</div>
+            <div className="text-dark-400 text-sm">{t('reportNotAvailable')}</div>
           )}
         </div>
       )}

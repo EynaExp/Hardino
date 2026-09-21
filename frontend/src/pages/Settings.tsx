@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getLLMSettings, updateLLMSettings, testLLMConnection } from '../services/api';
 import { Settings as SettingsIcon, Check, AlertTriangle, Loader2 } from 'lucide-react';
+import { useLang } from '../i18n';
 
 const PROVIDERS: Record<string, { name: string; baseUrl: string; models: string[] }> = {
   openrouter: { name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', models: ['xiaomi/mimo-v2.5', 'google/gemini-2.0-flash', 'openai/gpt-4o-mini'] },
@@ -18,6 +19,7 @@ export default function SettingsPage() {
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'error'>('idle');
   const [testMsg, setTestMsg] = useState('');
   const [saved, setSaved] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     getLLMSettings().then(s => {
@@ -58,11 +60,11 @@ export default function SettingsPage() {
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-2">
         <SettingsIcon className="w-6 h-6 text-neon-blue" />
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
+        <h1 className="text-2xl font-bold text-white">{t('settingsTitle')}</h1>
       </div>
 
       <div className="glass-card rounded-xl p-5 space-y-4">
-        <h2 className="font-semibold text-white">LLM Provider</h2>
+        <h2 className="font-semibold text-white">{t('llmProvider')}</h2>
         <div className="grid grid-cols-3 gap-2">
           {Object.entries(PROVIDERS).map(([key, prov]) => (
             <button key={key} onClick={() => handleProviderChange(key)}
@@ -74,10 +76,10 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        <input type="password" placeholder="API Key" value={apiKey} onChange={e => setApiKey(e.target.value)}
+        <input type="password" placeholder={t('apiKey')} value={apiKey} onChange={e => setApiKey(e.target.value)}
           className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
 
-        <input type="text" placeholder="Base URL" value={baseUrl} onChange={e => setBaseUrl(e.target.value)}
+        <input type="text" placeholder={t('baseUrl')} value={baseUrl} onChange={e => setBaseUrl(e.target.value)}
           className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
 
         <select value={model} onChange={e => setModel(e.target.value)}
@@ -91,16 +93,16 @@ export default function SettingsPage() {
             {testStatus === 'testing' ? <Loader2 className="w-4 h-4 animate-spin" /> :
              testStatus === 'ok' ? <Check className="w-4 h-4 text-neon-green" /> :
              testStatus === 'error' ? <AlertTriangle className="w-4 h-4 text-neon-red" /> : null}
-            Test Connection
+            {t('testConnection')}
           </button>
-          {testStatus === 'ok' && <span className="text-xs px-2 py-1 rounded-full bg-neon-green/10 text-neon-green">Active</span>}
-          {testStatus === 'error' && <span className="text-xs px-2 py-1 rounded-full bg-neon-red/10 text-neon-red">Failed</span>}
+          {testStatus === 'ok' && <span className="text-xs px-2 py-1 rounded-full bg-neon-green/10 text-neon-green">{t('active')}</span>}
+          {testStatus === 'error' && <span className="text-xs px-2 py-1 rounded-full bg-neon-red/10 text-neon-red">{t('failed')}</span>}
           {testMsg && <span className="text-xs text-dark-400">{testMsg}</span>}
         </div>
 
         <button onClick={handleSave}
           className="w-full py-2 rounded-lg bg-neon-blue text-dark-900 font-medium text-sm hover:bg-neon-blue/80">
-          {saved ? 'Saved!' : 'Save Settings'}
+          {saved ? t('saved') : t('saveSettings')}
         </button>
       </div>
     </div>

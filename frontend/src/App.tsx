@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Plus, Shield, Settings, KeyRound, X,
-  ChevronLeft, ChevronRight, LogOut, Server, HardDrive
+  ChevronLeft, ChevronRight, LogOut, Server, HardDrive, Globe
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import NewScan from './pages/NewScan';
@@ -11,6 +11,7 @@ import Assets from './pages/Assets';
 import SettingsPage from './pages/Settings';
 import Login from './pages/Login';
 import { getMe, changePassword, onUnauthorized } from './services/api';
+import { useLang } from './i18n';
 
 function Shell({ role, username, onLogout }: { role: string; username: string; onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -19,6 +20,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
   const [pwNew, setPwNew] = useState('');
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwSaving, setPwSaving] = useState(false);
+  const { lang, setLang, t } = useLang();
   const isAdmin = role === 'admin';
 
   const submitPassword = async () => {
@@ -35,10 +37,10 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
   };
 
   const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/new-scan', icon: Plus, label: 'New Scan' },
-    { path: '/assets', icon: HardDrive, label: 'Assets' },
-    ...(isAdmin ? [{ path: '/settings', icon: Settings, label: 'Settings' }] : []),
+    { path: '/', icon: LayoutDashboard, label: t('dashboard') },
+    { path: '/new-scan', icon: Plus, label: t('newScan') },
+    { path: '/assets', icon: HardDrive, label: t('assets') },
+    ...(isAdmin ? [{ path: '/settings', icon: Settings, label: t('settings') }] : []),
   ];
 
   return (
@@ -76,6 +78,16 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
             <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-700">
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
+            <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
+              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-blue hover:bg-neon-blue/10" title="Language">
+              <Globe className="w-4 h-4" />
+            </button>
+            {!collapsed && (
+              <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
+                className="text-xs text-dark-400 hover:text-neon-blue">
+                {lang === 'en' ? 'فارسی' : 'EN'}
+              </button>
+            )}
             <button onClick={() => setPwOpen(true)} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-blue hover:bg-neon-blue/10" title="Change password">
               <KeyRound className="w-4 h-4" />
             </button>
@@ -102,7 +114,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <KeyRound className="w-4 h-4 text-neon-blue" />
-                <h3 className="font-semibold text-white">Change Password</h3>
+                <h3 className="font-semibold text-white">{t('changePassword')}</h3>
               </div>
               <button onClick={() => setPwOpen(false)} className="p-1 rounded-lg text-dark-400 hover:text-white"><X className="w-4 h-4" /></button>
             </div>
@@ -116,7 +128,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
               )}
               <button onClick={submitPassword} disabled={pwSaving || !pwOld || !pwNew}
                 className="w-full py-2 rounded-lg bg-neon-blue text-dark-900 font-medium text-sm hover:bg-neon-blue/80 disabled:opacity-50">
-                {pwSaving ? 'Saving...' : 'Change Password'}
+                {pwSaving ? '...' : t('changePassword')}
               </button>
             </div>
           </div>

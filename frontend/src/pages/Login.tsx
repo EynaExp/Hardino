@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { login } from '../services/api';
 import { Shield } from 'lucide-react';
+import { useLang } from '../i18n';
 
 export default function Login({ onLogin }: { onLogin: (role: string, username: string) => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useLang();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,16 +30,16 @@ export default function Login({ onLogin }: { onLogin: (role: string, username: s
           <Shield className="w-8 h-8 text-neon-green" />
           <h1 className="text-2xl font-bold text-neon-green">Hardino</h1>
         </div>
-        <p className="text-center text-dark-400 text-sm mb-6">Device Hardening Platform</p>
+        <p className="text-center text-dark-400 text-sm mb-6">{t('deviceHardening')}</p>
         <div className="space-y-4">
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)}
+          <input type="text" placeholder={t('username')} value={username} onChange={e => setUsername(e.target.value)}
             className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-dark-600 text-white focus:border-neon-green focus:outline-none" autoFocus />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
+          <input type="password" placeholder={t('password')} value={password} onChange={e => setPassword(e.target.value)}
             className="w-full px-4 py-3 rounded-lg bg-dark-700 border border-dark-600 text-white focus:border-neon-green focus:outline-none" />
           {error && <p className="text-neon-red text-sm text-center">{error}</p>}
           <button type="submit" disabled={loading || !username || !password}
             className="w-full py-3 rounded-lg bg-neon-green text-dark-900 font-bold hover:bg-neon-green/80 disabled:opacity-50">
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? '...' : t('signIn')}
           </button>
         </div>
       </form>

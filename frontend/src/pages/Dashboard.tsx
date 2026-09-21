@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats, listEngagements, deleteEngagement } from '../services/api';
 import { Shield, Activity, AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
+import { useLang } from '../i18n';
 
 export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [scans, setScans] = useState<any[]>([]);
   const navigate = useNavigate();
+  const { t } = useLang();
 
   useEffect(() => {
     getDashboardStats().then(setStats).catch(() => {});
@@ -22,20 +24,20 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-white">{t('dashboardTitle')}</h1>
         <button onClick={() => navigate('/new-scan')}
           className="px-4 py-2 rounded-lg bg-neon-green text-dark-900 font-medium hover:bg-neon-green/80 text-sm">
-          + New Scan
+          {t('newScanBtn')}
         </button>
       </div>
 
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Scans', value: stats.total_scans, icon: Shield, color: 'text-neon-blue' },
-            { label: 'Completed', value: stats.completed, icon: CheckCircle, color: 'text-neon-green' },
-            { label: 'Critical Findings', value: stats.critical, icon: AlertTriangle, color: 'text-neon-red' },
-            { label: 'High Findings', value: stats.high, icon: Activity, color: 'text-neon-orange' },
+            { label: t('totalScans'), value: stats.total_scans, icon: Shield, color: 'text-neon-blue' },
+            { label: t('completed'), value: stats.completed, icon: CheckCircle, color: 'text-neon-green' },
+            { label: t('criticalFindings'), value: stats.critical, icon: AlertTriangle, color: 'text-neon-red' },
+            { label: t('highFindings'), value: stats.high, icon: Activity, color: 'text-neon-orange' },
           ].map((s, i) => (
             <div key={i} className="glass-card rounded-xl p-4">
               <s.icon className={`w-5 h-5 ${s.color} mb-2`} />
@@ -48,11 +50,11 @@ export default function Dashboard() {
 
       <div className="glass-card rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-dark-600">
-          <h2 className="font-semibold text-white">Recent Scans</h2>
+          <h2 className="font-semibold text-white">{t('recentScans')}</h2>
         </div>
         <div className="divide-y divide-dark-600">
           {scans.length === 0 && (
-            <div className="p-8 text-center text-dark-400">No scans yet. Click "New Scan" to start.</div>
+            <div className="p-8 text-center text-dark-400">{t('noScans')}</div>
           )}
           {scans.map(s => (
             <div key={s.id} className="px-4 py-3 flex items-center justify-between hover:bg-dark-700/50 cursor-pointer"

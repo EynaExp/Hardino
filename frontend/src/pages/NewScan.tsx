@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createEngagement, runEngagement } from '../services/api';
 import { Shield, Server, Key, Loader2, Brain, FileText } from 'lucide-react';
+import { useLang } from '../i18n';
 
 export default function NewScan() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
   const [osType, setOsType] = useState('auto');
@@ -45,22 +47,22 @@ export default function NewScan() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">New Hardening Scan</h1>
+      <h1 className="text-2xl font-bold text-white">{t('newScanTitle')}</h1>
 
       {/* Target Info */}
       <div className="glass-card rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2 text-neon-blue">
           <Server className="w-5 h-5" />
-          <h2 className="font-semibold">Target</h2>
+          <h2 className="font-semibold">{t('targetHost').replace(' *', '')}</h2>
         </div>
-        <input type="text" placeholder="Scan name (optional)" value={name} onChange={e => setName(e.target.value)}
+        <input type="text" placeholder={t('scanName')} value={name} onChange={e => setName(e.target.value)}
           className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
         <div className="grid grid-cols-2 gap-4">
-          <input type="text" placeholder="Target IP or hostname *" value={host} onChange={e => setHost(e.target.value)}
+          <input type="text" placeholder={t('targetHost')} value={host} onChange={e => setHost(e.target.value)}
             className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
           <select value={osType} onChange={e => setOsType(e.target.value)}
             className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none">
-            <option value="auto">Auto-detect OS</option>
+            <option value="auto">{t('autoDetectOS')}</option>
             <option value="linux">Linux</option>
             <option value="windows">Windows</option>
           </select>
@@ -71,20 +73,20 @@ export default function NewScan() {
       <div className="glass-card rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2 text-neon-green">
           <Key className="w-5 h-5" />
-          <h2 className="font-semibold">SSH Credentials</h2>
+          <h2 className="font-semibold">{t('sshCredentials')}</h2>
         </div>
         <p className="text-xs text-dark-400">
-          Credentials are used only for this scan and never stored on disk.
+          {t('sshCredsHint')}
         </p>
         <div className="grid grid-cols-2 gap-4">
-          <input type="text" placeholder="SSH Username *" value={sshUser} onChange={e => setSshUser(e.target.value)}
+          <input type="text" placeholder={t('sshUsername')} value={sshUser} onChange={e => setSshUser(e.target.value)}
             className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-green focus:outline-none" />
-          <input type="number" placeholder="SSH Port" value={sshPort} onChange={e => setSshPort(e.target.value)}
+          <input type="number" placeholder={t('sshPort')} value={sshPort} onChange={e => setSshPort(e.target.value)}
             className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-green focus:outline-none" />
         </div>
-        <input type="password" placeholder="SSH Password" value={sshPass} onChange={e => setSshPass(e.target.value)}
+        <input type="password" placeholder={t('sshPassword')} value={sshPass} onChange={e => setSshPass(e.target.value)}
           className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-green focus:outline-none" />
-        <input type="text" placeholder="SSH Key Path (optional, e.g. /home/user/.ssh/id_rsa)" value={sshKeyPath} onChange={e => setSshKeyPath(e.target.value)}
+        <input type="text" placeholder={t('sshKeyPath')} value={sshKeyPath} onChange={e => setSshKeyPath(e.target.value)}
           className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-green focus:outline-none" />
       </div>
 
@@ -94,8 +96,8 @@ export default function NewScan() {
           <div className="flex items-center gap-2">
             {aiAnalysis ? <Brain className="w-5 h-5 text-neon-blue" /> : <FileText className="w-5 h-5 text-dark-400" />}
             <div>
-              <h2 className="font-semibold text-white">AI Analysis</h2>
-              <p className="text-xs text-dark-400">Use LLM to analyze and prioritize findings</p>
+              <h2 className="font-semibold text-white">{t('aiAnalysis')}</h2>
+              <p className="text-xs text-dark-400">{t('aiAnalysisDesc')}</p>
             </div>
           </div>
           <button onClick={() => setAiAnalysis(!aiAnalysis)}
@@ -104,7 +106,7 @@ export default function NewScan() {
           </button>
         </div>
         {!aiAnalysis && (
-          <p className="text-xs text-dark-400 mt-2 ml-7">Report will be generated without LLM analysis (faster, no API key needed)</p>
+          <p className="text-xs text-dark-400 mt-2 ml-7">{t('aiDisabled')}</p>
         )}
       </div>
 
@@ -114,11 +116,11 @@ export default function NewScan() {
         <button onClick={() => handleCreate(true)} disabled={creating || !host || !sshUser}
           className="flex-1 py-3 rounded-lg bg-neon-green text-dark-900 font-bold hover:bg-neon-green/80 disabled:opacity-50 flex items-center justify-center gap-2">
           {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-          {creating ? 'Creating...' : 'Start Scan'}
+          {creating ? t('creating') : t('startScan')}
         </button>
         <button onClick={() => handleCreate(false)} disabled={creating || !host || !sshUser}
           className="px-6 py-3 rounded-lg border border-dark-600 text-dark-300 hover:text-white hover:border-dark-400 disabled:opacity-50 text-sm">
-          Create Only
+          {t('createOnly')}
         </button>
       </div>
     </div>

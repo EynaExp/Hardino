@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listAssets, getAsset, updateAssetNotes, deleteAsset } from '../services/api';
 import { Server, Search, Eye, Trash2, StickyNote, X, ExternalLink } from 'lucide-react';
+import { useLang } from '../i18n';
 
 export default function Assets() {
   const [assets, setAssets] = useState<any[]>([]);
@@ -9,6 +10,7 @@ export default function Assets() {
   const [selected, setSelected] = useState<any>(null);
   const [notes, setNotes] = useState('');
   const navigate = useNavigate();
+  const { t } = useLang();
 
   useEffect(() => { listAssets().then(setAssets).catch(() => {}); }, []);
 
@@ -39,30 +41,30 @@ export default function Assets() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Assets</h1>
-        <span className="text-sm text-dark-400">{assets.length} devices</span>
+        <h1 className="text-2xl font-bold text-white">{t('assetsTitle')}</h1>
+        <span className="text-sm text-dark-400">{assets.length} {t('devices')}</span>
       </div>
 
       {/* Search */}
       <div className="relative">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
-        <input type="text" placeholder="Search by IP, hostname, or OS..." value={search} onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder={t('searchAssets')} value={search} onChange={e => setSearch(e.target.value)}
           className="w-full pl-9 pr-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
       </div>
 
       {/* Asset Table */}
       <div className="glass-card rounded-xl overflow-hidden">
-        {filtered.length === 0 && <div className="p-8 text-center text-dark-400">No assets found. Run a scan to discover devices.</div>}
+        {filtered.length === 0 && <div className="p-8 text-center text-dark-400">{t('noAssets')}</div>}
         {filtered.length > 0 && (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-dark-600 text-left">
-                <th className="px-4 py-3 text-dark-400 font-medium">Host</th>
-                <th className="px-4 py-3 text-dark-400 font-medium">OS</th>
-                <th className="px-4 py-3 text-dark-400 font-medium">Score</th>
-                <th className="px-4 py-3 text-dark-400 font-medium">Findings</th>
-                <th className="px-4 py-3 text-dark-400 font-medium">Last Scan</th>
-                <th className="px-4 py-3 text-dark-400 font-medium">Actions</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('host')}</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('os')}</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('score')}</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('findingsCol')}</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('lastScan')}</th>
+                <th className="px-4 py-3 text-dark-400 font-medium">{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -74,7 +76,7 @@ export default function Assets() {
                       <span className="text-white font-mono">{a.host}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-dark-300 capitalize">{a.os_type || 'unknown'}</td>
+                  <td className="px-4 py-3 text-dark-300 capitalize">{a.os_type || t('unknownTarget')}</td>
                   <td className="px-4 py-3">
                     <span className={`font-bold ${
                       (a.hardening_score ?? 0) >= 80 ? 'text-neon-green' :
@@ -87,7 +89,7 @@ export default function Assets() {
                     <span className={`px-2 py-0.5 rounded text-xs ${
                       a.findings_count > 0 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
                     }`}>
-                      {a.findings_count} issues
+                      {a.findings_count} {t('issues')}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-dark-400 text-xs">
@@ -144,7 +146,7 @@ export default function Assets() {
             {/* OS Info */}
             {selected.os_info && (
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-dark-400 mb-1">OS Info</h3>
+                <h3 className="text-sm font-medium text-dark-400 mb-1">{t('osInfo')}</h3>
                 <pre className="text-xs text-dark-300 bg-dark-700 rounded-lg p-3 overflow-auto max-h-24">{selected.os_info}</pre>
               </div>
             )}
@@ -152,7 +154,7 @@ export default function Assets() {
             {/* Open Ports */}
             {selected.open_ports?.raw && (
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-dark-400 mb-1">Open Ports & Services</h3>
+                <h3 className="text-sm font-medium text-dark-400 mb-1">{t('openPorts')}</h3>
                 <pre className="text-xs text-dark-300 bg-dark-700 rounded-lg p-3 overflow-auto max-h-40">{selected.open_ports.raw}</pre>
               </div>
             )}
@@ -160,7 +162,7 @@ export default function Assets() {
             {/* Running Services */}
             {selected.services?.raw && (
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-dark-400 mb-1">Running Services</h3>
+                <h3 className="text-sm font-medium text-dark-400 mb-1">{t('runningServices')}</h3>
                 <pre className="text-xs text-dark-300 bg-dark-700 rounded-lg p-3 overflow-auto max-h-40">{selected.services.raw}</pre>
               </div>
             )}
@@ -168,7 +170,7 @@ export default function Assets() {
             {/* Findings */}
             {selected.findings?.length > 0 && (
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-dark-400 mb-2">Findings ({selected.findings.length})</h3>
+                <h3 className="text-sm font-medium text-dark-400 mb-2">{t('findings')} ({selected.findings.length})</h3>
                 <div className="space-y-1">
                   {selected.findings.map((f: any) => (
                     <div key={f.id} className="flex items-center gap-2 text-xs">
@@ -188,14 +190,14 @@ export default function Assets() {
             {/* Notes */}
             <div>
               <h3 className="text-sm font-medium text-dark-400 mb-1 flex items-center gap-1">
-                <StickyNote className="w-3 h-3" /> Notes
+                <StickyNote className="w-3 h-3" /> {t('notes')}
               </h3>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
                 className="w-full px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none resize-none"
-                placeholder="Add notes about this asset..." />
+                placeholder={t('addNotes')} />
               <button onClick={handleSaveNotes}
                 className="mt-2 px-3 py-1.5 rounded-lg bg-neon-blue text-dark-900 text-xs font-medium hover:bg-neon-blue/80">
-                Save Notes
+                {t('saveNotes')}
               </button>
             </div>
           </div>
