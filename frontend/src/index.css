@@ -66,6 +66,15 @@ html.light aside {
   border-color: #333 !important;
 }
 
+html.light .text-white { color: #1a1a1a !important; }
+html.light .text-dark-300 { color: #333 !important; }
+html.light .text-dark-400 { color: #555 !important; }
+html.light .font-bold,
+html.light .font-semibold { color: #1a1a1a !important; }
+html.light table th { color: #555 !important; }
+html.light .capitalize { color: #333 !important; }
+html.light pre { color: #333 !important; background: #e8e8e8 !important; }
+
 .glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
 
 .severity-critical { color: #ff4444; }
