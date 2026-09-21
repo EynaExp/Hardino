@@ -66,14 +66,18 @@ html.light aside {
   border-color: #333 !important;
 }
 
-html.light .text-white { color: #1a1a1a !important; }
 html.light .text-dark-300 { color: #333 !important; }
 html.light .text-dark-400 { color: #555 !important; }
-html.light .font-bold,
-html.light .font-semibold { color: #1a1a1a !important; }
-html.light table th { color: #555 !important; }
+html.light table td { color: #333 !important; }
 html.light .capitalize { color: #333 !important; }
 html.light pre { color: #333 !important; background: #e8e8e8 !important; }
+html.light p { color: #333 !important; }
+html.light .text-neon-green { color: #00aa55 !important; }
+html.light .bg-neon-green { background-color: #00cc66 !important; }
+html.light .glass-card .text-white { color: #1a1a1a !important; }
+html.light .glass-card h2,
+html.light .glass-card h3 { color: #1a1a1a !important; }
+html.light .glass-card a { color: #1a1a1a !important; }
 
 .glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
 
@@ -86,3 +90,6 @@ html.light pre { color: #333 !important; background: #e8e8e8 !important; }
 .status-running { color: #00ff88; }
 .status-failed { color: #ff4444; }
 .status-pending { color: #666666; }
+
+html.light .status-completed { color: #007a3d !important; }
+html.light .status-running { color: #007a3d !important; }

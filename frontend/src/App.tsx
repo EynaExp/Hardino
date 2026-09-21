@@ -59,7 +59,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
               end={item.path === '/'}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive ? 'bg-neon-green/10 text-neon-green' : 'text-dark-300 hover:text-white hover:bg-dark-700'
+                  isActive ? 'bg-neon-green/10 text-neon-green' : 'text-white/60 hover:text-white hover:bg-dark-700'
                 }`
               }
             >
@@ -75,27 +75,29 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-600 text-dark-300">{role}</span>
             </div>
           )}
-          <div className="flex items-center gap-1">
+          <div className={`${collapsed ? 'flex flex-col items-center gap-1' : 'flex items-center gap-1'}`}>
             <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-700">
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
-            <button onClick={toggleTheme}
-              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Toggle theme">
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
-              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Language">
-              <Globe className="w-4 h-4" />
-            </button>
             {!collapsed && (
-              <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
-                className="text-xs text-dark-400 hover:text-neon-green">
-                {lang === 'en' ? 'فارسی' : 'EN'}
-              </button>
+              <>
+                <button onClick={toggleTheme}
+                  className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Toggle theme">
+                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+                <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
+                  className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Language">
+                  <Globe className="w-4 h-4" />
+                </button>
+                <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
+                  className="text-xs text-dark-400 hover:text-neon-green">
+                  {lang === 'en' ? 'فارسی' : 'EN'}
+                </button>
+                <button onClick={() => setPwOpen(true)} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Change password">
+                  <KeyRound className="w-4 h-4" />
+                </button>
+              </>
             )}
-            <button onClick={() => setPwOpen(true)} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Change password">
-              <KeyRound className="w-4 h-4" />
-            </button>
             <button onClick={onLogout} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-red hover:bg-neon-red/10" title="Logout">
               <LogOut className="w-4 h-4" />
             </button>
