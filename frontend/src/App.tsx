@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Plus, Shield, Settings, KeyRound, X,
-  ChevronLeft, ChevronRight, LogOut, Server, HardDrive, Globe
+  ChevronLeft, ChevronRight, LogOut, Server, HardDrive, Globe,
+  Moon, Sun
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import NewScan from './pages/NewScan';
@@ -20,7 +21,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
   const [pwNew, setPwNew] = useState('');
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwSaving, setPwSaving] = useState(false);
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang, t, theme, toggleTheme } = useLang();
   const isAdmin = role === 'admin';
 
   const submitPassword = async () => {
@@ -78,17 +79,21 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
             <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-700">
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
+            <button onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Toggle theme">
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
-              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-blue hover:bg-neon-blue/10" title="Language">
+              className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Language">
               <Globe className="w-4 h-4" />
             </button>
             {!collapsed && (
               <button onClick={() => setLang(lang === 'en' ? 'fa' : 'en')}
-                className="text-xs text-dark-400 hover:text-neon-blue">
+                className="text-xs text-dark-400 hover:text-neon-green">
                 {lang === 'en' ? 'فارسی' : 'EN'}
               </button>
             )}
-            <button onClick={() => setPwOpen(true)} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-blue hover:bg-neon-blue/10" title="Change password">
+            <button onClick={() => setPwOpen(true)} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-green hover:bg-neon-green/10" title="Change password">
               <KeyRound className="w-4 h-4" />
             </button>
             <button onClick={onLogout} className="p-1.5 rounded-lg text-dark-400 hover:text-neon-red hover:bg-neon-red/10" title="Logout">
