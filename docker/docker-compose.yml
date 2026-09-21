@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    container_name: hardino-app
+    ports:
+      - "80:80"
+      - "8001:8000"
+    volumes:
+      - ../backend:/app
+      - hardino-data:/app/data
+    env_file:
+      - ../backend/.env
+    restart: unless-stopped
+
+volumes:
+  hardino-data:

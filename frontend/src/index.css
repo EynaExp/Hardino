@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-green: #00ff88;
+  --neon-blue: #00bbff;
+  --neon-red: #ff4444;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.glass-card {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 187, 255, 0.1);
+}
+
+.glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
+.glow-blue { box-shadow: 0 0 20px rgba(0, 187, 255, 0.15); }
+.glow-red { box-shadow: 0 0 20px rgba(255, 68, 68, 0.15); }
+
+.severity-critical { color: #ff4444; }
+.severity-high { color: #ff8800; }
+.severity-medium { color: #ffcc00; }
+.severity-low { color: #00bbff; }
+
+.status-completed { color: #00ff88; }
+.status-running { color: #00bbff; }
+.status-failed { color: #ff4444; }
+.status-pending { color: #6b7a94; }
