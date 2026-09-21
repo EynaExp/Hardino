@@ -170,7 +170,12 @@ export default function ScanDetail() {
           {reportData ? (
             <>
               <div className="glass-card rounded-xl p-5">
-                <h3 className="font-semibold text-white mb-3">Hardening Score</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-white">Hardening Score</h3>
+                  {reportData.ai_analysis_enabled === false && (
+                    <span className="text-xs px-2 py-1 rounded bg-dark-600 text-dark-300">AI Analysis Off</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-4">
                   <div className={`text-5xl font-bold ${
                     reportData.summary.hardening_score >= 80 ? 'text-neon-green' :
@@ -179,6 +184,7 @@ export default function ScanDetail() {
                     {reportData.summary.hardening_score}%
                   </div>
                   <div className="space-y-1 text-sm">
+                    <div className="text-dark-300">{reportData.summary.passed}/{reportData.summary.total_checks} checks passed</div>
                     <div className="text-neon-red">Critical: {reportData.summary.critical}</div>
                     <div className="text-neon-orange">High: {reportData.summary.high}</div>
                     <div className="text-neon-yellow">Medium: {reportData.summary.medium}</div>

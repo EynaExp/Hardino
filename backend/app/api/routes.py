@@ -123,6 +123,7 @@ class EngagementCreate(BaseModel):
     ssh_port: int = 22
     ssh_key_path: str = ""
     target_os: str = "auto"
+    ai_analysis: bool = True
 
 @router.post("/engagements")
 async def create_engagement(body: EngagementCreate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
@@ -213,6 +214,7 @@ async def run_engagement(
         "key_path": target.get("ssh_key_path", ""),
     }
     target_os = target.get("os_type", "auto")
+    ai_analysis = target.get("ai_analysis", True)
 
     eng.status = "queued"
     await db.commit()
@@ -224,6 +226,7 @@ async def run_engagement(
         target_host=host,
         credentials=ssh_creds,
         target_os=target_os,
+        ai_analysis=ai_analysis,
     )
 
     return {"status": "started", "engagement_id": engagement_id}

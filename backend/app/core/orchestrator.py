@@ -38,11 +38,13 @@ class HardeningOrchestrator:
         target_host: str,
         credentials: dict,
         target_os: str = "auto",
+        ai_analysis: bool = True,
     ):
         self.engagement_id = engagement_id
         self.target_host = target_host
         self.credentials = credentials
         self.target_os = target_os
+        self.ai_analysis = ai_analysis
         self._start_time: Optional[datetime] = None
 
     async def run(self):
@@ -60,8 +62,11 @@ class HardeningOrchestrator:
             # Phase 1: Audit
             await self._phase_audit()
 
-            # Phase 2: Hardening analysis
-            await self._phase_hardening()
+            # Phase 2: Hardening analysis (optional)
+            if self.ai_analysis:
+                await self._phase_hardening()
+            else:
+                await self._log_phase("hardening", "skipped", "AI analysis disabled")
 
             # Phase 3: Report
             await self._phase_report()
@@ -324,16 +329,28 @@ Provide:
         medium = sum(1 for f in findings if f["severity"] == "medium")
         low = sum(1 for f in findings if f["severity"] == "low")
 
+        # Score: start at 100, deduct per finding weighted by severity
+        # With 35 total checks: critical=-15, high=-8, medium=-3, low=-1
+        score = 100
+        score -= critical * 15
+        score -= high * 8
+        score -= medium * 3
+        score -= low * 1
+        score = max(0, min(100, score))
+
         report_data = {
             "target": self.target_host,
             "date": datetime.utcnow().isoformat(),
+            "ai_analysis_enabled": self.ai_analysis,
             "summary": {
                 "total_findings": len(findings),
                 "critical": critical,
                 "high": high,
                 "medium": medium,
                 "low": low,
-                "hardening_score": max(0, 100 - (critical * 25 + high * 10 + medium * 5 + low * 2)),
+                "total_checks": 35,
+                "passed": 35 - len(findings),
+                "hardening_score": score,
             },
             "findings": findings,
         }
@@ -356,7 +373,8 @@ async def run_hardening_assessment(
     target_host: str,
     credentials: dict,
     target_os: str = "auto",
+    ai_analysis: bool = True,
 ):
     """Entry point for running a hardening assessment."""
-    orch = HardeningOrchestrator(engagement_id, target_host, credentials, target_os)
+    orch = HardeningOrchestrator(engagement_id, target_host, credentials, target_os, ai_analysis)
     await orch.run()

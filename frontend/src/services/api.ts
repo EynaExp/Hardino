@@ -1,5 +1,8 @@
 const API_BASE = '/api';
 
+let unauthorizedCallback: (() => void) | null = null;
+export const onUnauthorized = (cb: () => void) => { unauthorizedCallback = cb; };
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('hardino_token');
   const headers: Record<string, string> = {
@@ -11,7 +14,7 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   if (res.status === 401) {
     localStorage.removeItem('hardino_token');
-    window.location.href = '/login';
+    unauthorizedCallback?.();
     throw new Error('Unauthorized');
   }
   if (!res.ok) {
