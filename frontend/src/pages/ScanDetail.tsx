@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { getEngagement, getFindings, getSessions, getActions, getReports, getPhases } from '../services/api';
-import { Shield, CheckCircle, AlertTriangle, XCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { Shield, CheckCircle, AlertTriangle, XCircle, Clock, ChevronDown, ChevronRight, Search } from 'lucide-react';
 
 export default function ScanDetail() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +13,8 @@ export default function ScanDetail() {
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [actions, setActions] = useState<any[]>([]);
   const [tab, setTab] = useState<'findings' | 'phases' | 'agent' | 'report'>('findings');
+  const [findingsSearch, setFindingsSearch] = useState('');
+  const [findingsSort, setFindingsSort] = useState<'severity' | 'category' | 'id'>('severity');
 
   useEffect(() => {
     if (!id) return;
@@ -45,6 +47,27 @@ export default function ScanDetail() {
 
   const report = reports[0];
   const reportData = report?.content ? JSON.parse(report.content) : null;
+
+  const severityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+
+  const filteredFindings = useMemo(() => {
+    let result = [...findings];
+    if (findingsSearch) {
+      const q = findingsSearch.toLowerCase();
+      result = result.filter(f =>
+        f.title.toLowerCase().includes(q) ||
+        f.category.toLowerCase().includes(q) ||
+        f.severity.toLowerCase().includes(q) ||
+        (f.recommendation || '').toLowerCase().includes(q)
+      );
+    }
+    result.sort((a, b) => {
+      if (findingsSort === 'severity') return (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4);
+      if (findingsSort === 'category') return a.category.localeCompare(b.category);
+      return a.title.localeCompare(b.title);
+    });
+    return result;
+  }, [findings, findingsSearch, findingsSort]);
 
   if (!engagement) return <div className="p-6 text-dark-400">Loading...</div>;
 
@@ -84,26 +107,56 @@ export default function ScanDetail() {
       {/* Findings Tab */}
       {tab === 'findings' && (
         <div className="space-y-3">
-          {findings.length === 0 && <div className="text-dark-400 text-sm">No findings yet.</div>}
-          {findings.map(f => (
-            <div key={f.id} className="glass-card rounded-xl p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium severity-${f.severity} bg-${f.severity === 'critical' ? 'neon-red' : f.severity === 'high' ? 'neon-orange' : 'dark-600'}/20`}>
-                      {f.severity}
-                    </span>
-                    <span className="text-xs text-dark-400">{f.category}</span>
-                  </div>
-                  <h3 className="text-white font-medium mt-1">{f.title}</h3>
-                  <p className="text-dark-300 text-sm mt-1">{f.description}</p>
-                  {f.recommendation && (
-                    <p className="text-neon-green text-xs mt-2">Fix: {f.recommendation}</p>
-                  )}
-                </div>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
+              <input type="text" placeholder="Search findings..." value={findingsSearch} onChange={e => setFindingsSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none" />
             </div>
-          ))}
+            <select value={findingsSort} onChange={e => setFindingsSort(e.target.value as any)}
+              className="px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-white text-sm focus:border-neon-blue focus:outline-none">
+              <option value="severity">Sort by Severity</option>
+              <option value="category">Sort by Category</option>
+              <option value="id">Sort by ID</option>
+            </select>
+            <span className="text-xs text-dark-400 whitespace-nowrap">{filteredFindings.length}/{findings.length}</span>
+          </div>
+          <div className="glass-card rounded-xl overflow-hidden">
+            {filteredFindings.length === 0 && <div className="p-4 text-dark-400 text-sm">No findings match your search.</div>}
+            {filteredFindings.length > 0 && (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-dark-600 text-left">
+                    <th className="px-4 py-3 text-dark-400 font-medium">ID</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">Severity</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">Category</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">Finding</th>
+                    <th className="px-4 py-3 text-dark-400 font-medium">Remediation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFindings.map(f => (
+                    <tr key={f.id} className="border-b border-dark-700 last:border-0 hover:bg-dark-700/30">
+                      <td className="px-4 py-3 text-dark-300 font-mono text-xs whitespace-nowrap">{f.title.split(':')[0]}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${
+                          f.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                          f.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                          f.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-blue-500/20 text-blue-400'
+                        }`}>
+                          {f.severity}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-dark-300 whitespace-nowrap">{f.category}</td>
+                      <td className="px-4 py-3 text-white">{f.title.includes(':') ? f.title.split(':').slice(1).join(':').trim() : f.title}</td>
+                      <td className="px-4 py-3 text-neon-green text-xs">{f.recommendation || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
 

@@ -115,3 +115,21 @@ class PhaseLog(Base):
     completed_at = Column(DateTime, nullable=True)
 
     engagement = relationship("Engagement", back_populates="phase_logs")
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    host = Column(String, nullable=False, index=True)
+    os_type = Column(String, nullable=True)
+    os_info = Column(String, nullable=True)
+    open_ports = Column(JSON, nullable=True)
+    services = Column(JSON, nullable=True)
+    last_scan_id = Column(String, ForeignKey("engagements.id"), nullable=True)
+    last_scan_at = Column(DateTime, nullable=True)
+    hardening_score = Column(Integer, nullable=True)
+    findings_count = Column(Integer, default=0)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

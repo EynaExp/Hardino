@@ -23,7 +23,7 @@ from app.core.ssh_executor import SSHExecutor, SSHCredentials, evaluate_check
 from app.core.checklists import get_checklist, detect_os_from_ssh_output
 from app.core.models import (
     Engagement, AgentSession, AgentAction,
-    Finding, Report, PhaseLog,
+    Finding, Report, PhaseLog, Asset,
 )
 from app.core.database import async_session
 
@@ -148,6 +148,40 @@ class HardeningOrchestrator:
             db.add(finding)
             await db.commit()
 
+    async def _save_asset(self, os_type: str, os_info: str, open_ports: str, services: str, passed: int, failed: int):
+        """Save or update asset record for this target."""
+        async with async_session() as db:
+            result = await db.execute(select(Asset).where(Asset.host == self.target_host))
+            asset = result.scalar_one_or_none()
+
+            score = max(0, min(100, 100 - (failed * 3)))
+            total = passed + failed
+
+            if asset:
+                asset.os_type = os_type
+                asset.os_info = os_info[:1000]
+                asset.open_ports = {"raw": open_ports[:2000]}
+                asset.services = {"raw": services[:2000]}
+                asset.last_scan_id = self.engagement_id
+                asset.last_scan_at = datetime.utcnow()
+                asset.hardening_score = score
+                asset.findings_count = failed
+                asset.updated_at = datetime.utcnow()
+            else:
+                asset = Asset(
+                    host=self.target_host,
+                    os_type=os_type,
+                    os_info=os_info[:1000],
+                    open_ports={"raw": open_ports[:2000]},
+                    services={"raw": services[:2000]},
+                    last_scan_id=self.engagement_id,
+                    last_scan_at=datetime.utcnow(),
+                    hardening_score=score,
+                    findings_count=failed,
+                )
+                db.add(asset)
+            await db.commit()
+
     # ─── Phase 1: Audit ────────────────────────────────────────────────
 
     async def _phase_audit(self):
@@ -186,6 +220,18 @@ class HardeningOrchestrator:
                     raise ValueError(f"No checklist available for OS: {os_type}")
 
                 await self._add_action(session_id, "load_checklist", {"os": os_type, "items": len(checklist)}, f"Loaded {len(checklist)} checks")
+
+                # Collect asset info
+                os_info_r = await ssh.run("cat /etc/os-release 2>/dev/null || ver 2>nul", timeout=10)
+                os_info = os_info_r.output[:500] if os_info_r.success else os_type
+
+                ports_r = await ssh.run("ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null", timeout=10)
+                open_ports = ports_r.output[:2000] if ports_r.success else ""
+
+                services_r = await ssh.run("systemctl list-units --type=service --state=running --no-pager 2>/dev/null | head -30 || echo ''", timeout=10)
+                services = services_r.output[:2000] if services_r.success else ""
+
+                await self._add_action(session_id, "collect_assets", {"host": self.target_host}, f"OS: {os_type}, Ports collected")
 
                 # Run each check
                 for item in checklist:
@@ -246,6 +292,9 @@ class HardeningOrchestrator:
                     recommendation=r["remediation"],
                     reference=f'CIS Benchmark - {r["category"]}',
                 )
+
+        # Save/update asset
+        await self._save_asset(os_type, os_info, open_ports, services, passed, failed)
 
     # ─── Phase 2: Hardening Analysis ──────────────────────────────────
 

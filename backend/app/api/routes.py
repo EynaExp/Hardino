@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.core.database import get_db
-from app.core.models import User, Engagement, AgentSession, AgentAction, Finding, Report, PhaseLog
+from app.core.models import User, Engagement, AgentSession, AgentAction, Finding, Report, PhaseLog, Asset
 from app.core.auth import (
     verify_password, hash_password, create_access_token, get_current_user,
 )
@@ -347,3 +347,62 @@ async def dashboard_stats(user: User = Depends(get_current_user), db: AsyncSessi
         "total_scans": total, "completed": completed, "running": running,
         "total_findings": findings_count, "critical": critical, "high": high,
     }
+
+# ─── Assets ────────────────────────────────────────────────────────
+
+@router.get("/assets")
+async def list_assets(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Asset).order_by(Asset.updated_at.desc()))
+    assets = result.scalars().all()
+    return [
+        {
+            "id": a.id, "host": a.host, "os_type": a.os_type, "os_info": a.os_info,
+            "open_ports": a.open_ports, "services": a.services,
+            "last_scan_id": a.last_scan_id, "last_scan_at": a.last_scan_at.isoformat() if a.last_scan_at else None,
+            "hardening_score": a.hardening_score, "findings_count": a.findings_count,
+            "notes": a.notes, "created_at": a.created_at.isoformat(),
+            "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+        }
+        for a in assets
+    ]
+
+@router.get("/assets/{asset_id}")
+async def get_asset(asset_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    asset = await db.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    # Get findings from last scan
+    findings = []
+    if asset.last_scan_id:
+        result = await db.execute(select(Finding).where(Finding.engagement_id == asset.last_scan_id))
+        findings = [
+            {"id": f.id, "title": f.title, "severity": f.severity, "category": f.category,
+             "description": f.description, "recommendation": f.recommendation}
+            for f in result.scalars().all()
+        ]
+    return {
+        "id": asset.id, "host": asset.host, "os_type": asset.os_type, "os_info": asset.os_info,
+        "open_ports": asset.open_ports, "services": asset.services,
+        "last_scan_id": asset.last_scan_id, "last_scan_at": asset.last_scan_at.isoformat() if asset.last_scan_at else None,
+        "hardening_score": asset.hardening_score, "findings_count": asset.findings_count,
+        "notes": asset.notes, "created_at": asset.created_at.isoformat(),
+        "findings": findings,
+    }
+
+@router.put("/assets/{asset_id}/notes")
+async def update_asset_notes(asset_id: str, body: dict, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    asset = await db.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    asset.notes = body.get("notes", "")
+    await db.commit()
+    return {"status": "updated"}
+
+@router.delete("/assets/{asset_id}")
+async def delete_asset(asset_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    asset = await db.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Not found")
+    await db.delete(asset)
+    await db.commit()
+    return {"status": "deleted"}

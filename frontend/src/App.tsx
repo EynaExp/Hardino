@@ -2,11 +2,12 @@ import { BrowserRouter, Routes, Route, NavLink, useNavigate } from 'react-router
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Plus, Shield, Settings, KeyRound, X,
-  ChevronLeft, ChevronRight, LogOut, Server
+  ChevronLeft, ChevronRight, LogOut, Server, HardDrive
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import NewScan from './pages/NewScan';
 import ScanDetail from './pages/ScanDetail';
+import Assets from './pages/Assets';
 import SettingsPage from './pages/Settings';
 import Login from './pages/Login';
 import { getMe, changePassword, onUnauthorized } from './services/api';
@@ -36,6 +37,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/new-scan', icon: Plus, label: 'New Scan' },
+    { path: '/assets', icon: HardDrive, label: 'Assets' },
     ...(isAdmin ? [{ path: '/settings', icon: Settings, label: 'Settings' }] : []),
   ];
 
@@ -89,6 +91,7 @@ function Shell({ role, username, onLogout }: { role: string; username: string; o
           <Route path="/" element={<Dashboard />} />
           <Route path="/new-scan" element={<NewScan />} />
           <Route path="/scan/:id" element={<ScanDetail />} />
+          <Route path="/assets" element={<Assets />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>

@@ -79,3 +79,11 @@ export const getDashboardStats = () => request<any>('/dashboard/stats');
 
 // Tools
 export const getChecklists = () => request<any>('/tools/checklists');
+
+// Assets
+export const listAssets = () => request<any[]>('/assets');
+export const getAsset = (id: string) => request<any>(`/assets/${id}`);
+export const updateAssetNotes = (id: string, notes: string) =>
+  request<any>(`/assets/${id}/notes`, { method: 'PUT', body: JSON.stringify({ notes }) });
+export const deleteAsset = (id: string) =>
+  request<any>(`/assets/${id}`, { method: 'DELETE' });
