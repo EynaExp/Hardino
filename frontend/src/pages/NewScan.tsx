@@ -65,6 +65,7 @@ export default function NewScan() {
             <option value="auto">{t('autoDetectOS')}</option>
             <option value="linux">Linux</option>
             <option value="windows">Windows</option>
+            <option value="fortigate">FortiGate (FortiOS)</option>
           </select>
         </div>
       </div>

@@ -94,6 +94,10 @@ class SSHExecutor:
 
     async def detect_os(self) -> str:
         """Detect remote OS type."""
+        # FortiOS: `uname` does not exist; probe the FortiGate CLI first
+        result = await self.run("get system status", timeout=10)
+        if any(x in result.output for x in ["FortiGate", "FortiOS", "FortiAnalyzer", "fortinet"]):
+            return "fortigate"
         result = await self.run("uname -a 2>/dev/null || echo NOT_LINUX")
         if "Linux" in result.output or "linux" in result.output:
             return "linux"

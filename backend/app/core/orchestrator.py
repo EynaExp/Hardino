@@ -222,14 +222,25 @@ class HardeningOrchestrator:
                 await self._add_action(session_id, "load_checklist", {"os": os_type, "items": len(checklist)}, f"Loaded {len(checklist)} checks")
 
                 # Collect asset info
-                os_info_r = await ssh.run("cat /etc/os-release 2>/dev/null || ver 2>nul", timeout=10)
-                os_info = os_info_r.output[:500] if os_info_r.success else os_type
+                if os_type == "fortigate":
+                    # FortiOS CLI — no shell, no /proc, no systemctl
+                    os_info_r = await ssh.run("get system status", timeout=10)
+                    os_info = os_info_r.output[:500] if os_info_r.success else os_type
 
-                ports_r = await ssh.run("ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null", timeout=10)
-                open_ports = ports_r.output[:2000] if ports_r.success else ""
+                    ports_r = await ssh.run("show system interface", timeout=15)
+                    open_ports = ports_r.output[:2000] if ports_r.success else ""
 
-                services_r = await ssh.run("systemctl list-units --type=service --state=running --no-pager 2>/dev/null | head -30 || echo ''", timeout=10)
-                services = services_r.output[:2000] if services_r.success else ""
+                    services_r = await ssh.run("get system performance status", timeout=10)
+                    services = services_r.output[:2000] if services_r.success else ""
+                else:
+                    os_info_r = await ssh.run("cat /etc/os-release 2>/dev/null || ver 2>nul", timeout=10)
+                    os_info = os_info_r.output[:500] if os_info_r.success else os_type
+
+                    ports_r = await ssh.run("ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null", timeout=10)
+                    open_ports = ports_r.output[:2000] if ports_r.success else ""
+
+                    services_r = await ssh.run("systemctl list-units --type=service --state=running --no-pager 2>/dev/null | head -30 || echo ''", timeout=10)
+                    services = services_r.output[:2000] if services_r.success else ""
 
                 await self._add_action(session_id, "collect_assets", {"host": self.target_host}, f"OS: {os_type}, Ports collected")
 
@@ -256,6 +267,7 @@ class HardeningOrchestrator:
                         "status": status_str,
                         "expected": item.get("expected", ""),
                         "remediation": item.get("remediation", ""),
+                        "reference": item.get("reference", ""),
                     })
 
                     await self._add_action(
@@ -290,7 +302,7 @@ class HardeningOrchestrator:
                     category=r["category"],
                     description=f'Check failed. Output: {r["output"][:200]}',
                     recommendation=r["remediation"],
-                    reference=f'CIS Benchmark - {r["category"]}',
+                    reference=r.get("reference") or f'CIS Benchmark - {r["category"]}',
                 )
 
         # Save/update asset
@@ -378,6 +390,21 @@ Provide:
         medium = sum(1 for f in findings if f["severity"] == "medium")
         low = sum(1 for f in findings if f["severity"] == "low")
 
+        # Real totals from the audit session (35 Linux / 26 Windows / 39 FortiGate)
+        total_checks = 0
+        passed_checks = 0
+        async with async_session() as db:
+            result = await db.execute(
+                select(AgentSession).where(
+                    AgentSession.engagement_id == self.engagement_id,
+                    AgentSession.agent_role == "audit",
+                )
+            )
+            audit = result.scalars().first()
+            if audit and audit.output_data:
+                total_checks = audit.output_data.get("total_checks", 0)
+                passed_checks = audit.output_data.get("passed", 0)
+
         # Score: start at 100, deduct per finding weighted by severity
         # With 35 total checks: critical=-15, high=-8, medium=-3, low=-1
         score = 100
@@ -397,8 +424,8 @@ Provide:
                 "high": high,
                 "medium": medium,
                 "low": low,
-                "total_checks": 35,
-                "passed": 35 - len(findings),
+                "total_checks": total_checks,
+                "passed": passed_checks,
                 "hardening_score": score,
             },
             "findings": findings,
