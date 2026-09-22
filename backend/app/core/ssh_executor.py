@@ -33,6 +33,20 @@ class CommandResult:
     error: Optional[str] = None
 
 
+# Shell profile scripts on some targets call tput/setterm without $TERM in
+# non-interactive SSH sessions; those error lines get merged into stderr and
+# would break anchored/empty-output regex evaluation. Drop them from output.
+_NOISE_PREFIXES = ("tput:", "setterm:")
+
+
+def _strip_terminal_noise(output: str) -> str:
+    lines = [
+        ln for ln in output.splitlines()
+        if not ln.lstrip().startswith(_NOISE_PREFIXES)
+    ]
+    return "\n".join(lines).strip()
+
+
 class SSHExecutor:
     def __init__(self, creds: SSHCredentials):
         self.creds = creds
@@ -74,10 +88,12 @@ class SSHExecutor:
                 self._conn.run(command),
                 timeout=timeout,
             )
-            output = (result.stdout or "") + (result.stderr or "")
+            output = _strip_terminal_noise(
+                (result.stdout or "") + (result.stderr or "")
+            )
             return CommandResult(
                 command=command,
-                output=output.strip(),
+                output=output,
                 exit_code=result.exit_status or 0,
                 success=(result.exit_status == 0),
             )
@@ -142,8 +158,8 @@ def evaluate_check(output: str, expected_pattern: Optional[str]) -> bool:
     If expected_pattern is None, any non-empty output is considered a pass.
     """
     if not expected_pattern:
-        return bool(output.strip())
+        return bool(_strip_terminal_noise(output))
     try:
-        return bool(re.search(expected_pattern, output, re.IGNORECASE))
+        return bool(re.search(expected_pattern, _strip_terminal_noise(output), re.IGNORECASE))
     except re.error:
         return expected_pattern.lower() in output.lower()

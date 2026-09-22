@@ -1393,7 +1393,7 @@ DEVSEC_LINUX_CHECKLIST = [
         "id": "L-DS-SEL-01",
         "category": "Mandatory Access Control",
         "description": "SELinux should be Enforcing or AppArmor loaded (dev-sec: selinux=enforcing)",
-        "check_command": "getenforce 2>/dev/null || (aa-status 2>/dev/null | grep -i -m1 'apparmor') || echo NONE",
+        "check_command": "aa-status 2>/dev/null | grep -i -m1 'apparmor module is loaded' || grep -i -o -m1 -E 'apparmor=1|security=apparmor' /proc/cmdline || getenforce 2>/dev/null || echo NONE",
         "expected": r"(?m)^(enforcing\b|apparmor)",
         "os": "linux",
         "severity": "medium",
