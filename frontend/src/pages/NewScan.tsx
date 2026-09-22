@@ -66,6 +66,7 @@ export default function NewScan() {
             <option value="linux">Linux</option>
             <option value="windows">Windows</option>
             <option value="fortigate">FortiGate (FortiOS)</option>
+            <option value="esxi">VMware ESXi</option>
           </select>
         </div>
       </div>

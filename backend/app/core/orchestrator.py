@@ -232,6 +232,16 @@ class HardeningOrchestrator:
 
                     services_r = await ssh.run("get system performance status", timeout=10)
                     services = services_r.output[:2000] if services_r.success else ""
+                elif os_type == "esxi":
+                    # ESXi shell — esxcli/vim-cmd only, no Linux tooling
+                    os_info_r = await ssh.run("esxcli system version get", timeout=10)
+                    os_info = os_info_r.output[:500] if os_info_r.success else os_type
+
+                    ports_r = await ssh.run("esxcli network ip connection list", timeout=15)
+                    open_ports = ports_r.output[:2000] if ports_r.success else ""
+
+                    services_r = await ssh.run("esxcli system services list", timeout=15)
+                    services = services_r.output[:2000] if services_r.success else ""
                 else:
                     os_info_r = await ssh.run("cat /etc/os-release 2>/dev/null || ver 2>nul", timeout=10)
                     os_info = os_info_r.output[:500] if os_info_r.success else os_type
@@ -390,7 +400,7 @@ Provide:
         medium = sum(1 for f in findings if f["severity"] == "medium")
         low = sum(1 for f in findings if f["severity"] == "low")
 
-        # Real totals from the audit session (35 Linux / 26 Windows / 39 FortiGate)
+        # Real totals from the audit session (69 Linux / 26 Windows / 39 FortiGate / 22 ESXi)
         total_checks = 0
         passed_checks = 0
         async with async_session() as db:

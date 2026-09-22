@@ -98,6 +98,12 @@ class SSHExecutor:
         result = await self.run("get system status", timeout=10)
         if any(x in result.output for x in ["FortiGate", "FortiOS", "FortiAnalyzer", "fortinet"]):
             return "fortigate"
+        # ESXi: has esxcli, no uname match on Linux; probe before uname
+        result = await self.run("esxcli system version get 2>/dev/null || echo NOT_ESXI")
+        if "NOT_ESXI" not in result.output and any(
+            x in result.output.lower() for x in ["esxi", "vmware", "version:"]
+        ):
+            return "esxi"
         result = await self.run("uname -a 2>/dev/null || echo NOT_LINUX")
         if "Linux" in result.output or "linux" in result.output:
             return "linux"
