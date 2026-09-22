@@ -1709,14 +1709,16 @@ ESXI_CHECKLIST = [
 
 def get_checklist(os_type: str) -> list:
     """Return the checklist for the given OS type."""
+    from app.core.checklists_ext import (CIS_LINUX_EXTRA, CIS_WINDOWS_EXTRA,
+                                         CIS_FORTIGATE_EXTRA, ESXI_STIG_EXTRA)
     if os_type.lower() == "linux":
-        return LINUX_CHECKLIST + DEVSEC_LINUX_CHECKLIST
+        return LINUX_CHECKLIST + DEVSEC_LINUX_CHECKLIST + CIS_LINUX_EXTRA
     elif os_type.lower() == "windows":
-        return WINDOWS_CHECKLIST
+        return WINDOWS_CHECKLIST + CIS_WINDOWS_EXTRA
     elif os_type.lower() in ("fortigate", "fortios", "fortinet"):
-        return FORTIGATE_CHECKLIST
+        return FORTIGATE_CHECKLIST + CIS_FORTIGATE_EXTRA
     elif os_type.lower() in ("esxi", "vmware", "vsphere"):
-        return ESXI_CHECKLIST
+        return ESXI_CHECKLIST + ESXI_STIG_EXTRA
     return []
 
 

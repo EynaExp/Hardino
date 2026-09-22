@@ -8,13 +8,14 @@
 
 ## Features
 
-- **4 supported platforms, 156 checks**
+- **4 supported platforms, 350 checks**
   | Platform | Checks | Benchmark sources |
   |---|---|---|
-  | Linux | 69 | Linux Server Hardening guide, dev-sec `ansible-collection-hardening` (os_hardening / ssh_hardening) |
-  | Windows Server | 26 | CIS Windows Server 2022 Benchmark |
-  | FortiGate (FortiOS) | 39 | FortiOS 6.4 Hardening Guide, FortiOS 7.0 Best Practices, NIST SP 800-53 Rev. 5, SANS Firewall Auditing Checklist |
-  | VMware ESXi | 22 | VMware vSphere Security Configuration Guide 8.0 (control set used by the Windmil vSphere Hardening Scanner) |
+  | Linux | 124 | Linux Server Hardening guide, dev-sec `ansible-collection-hardening` (os_hardening / ssh_hardening), CIS Benchmark for Linux |
+  | Windows Server | 128 | CIS Microsoft Windows Server 2022 Benchmark, CIS v8 controls, Microsoft security baseline |
+  | FortiGate (FortiOS) | 41 | FortiOS 6.4 Hardening Guide, FortiOS 7.0 Best Practices, NIST SP 800-53 Rev. 5, SANS Firewall Auditing Checklist |
+  | VMware ESXi | 57 | VMware vSphere Security Configuration Guide 8.0 (Windmil vSphere Hardening Scanner), DISA VMware ESXi 8 STIG (V2R2) |
+  Cross-checks informed by `finalduty/cis-benchmarks-audit` (CC BY-NC-SA 4.0), `ObsidianCorps/windows-hardening` (MIT) and `cjundang/MS-Windows-Checklist`; all check commands/wording are written for Hardino.
 - **Auto OS detection** — probes FortiOS / ESXi / Linux / Windows in order when you pick *Auto*.
 - **Read-only audits** — every check runs a read-only command (`show`, `get`, `esxcli`, `sysctl -n`, config greps). Hardino reports findings; it does **not** change the target.
 - **Findings table** with free-text search and sort-by-severity (critical → low).
@@ -119,7 +120,8 @@ Hardino/
 │   ├── main.py                 # FastAPI app entry
 │   └── app/
 │       ├── api/routes.py       # REST endpoints (auth, engagements, assets, settings)
-│       ├── core/checklists.py  # 69 Linux + 26 Windows + 39 FortiGate + 22 ESXi checks
+│       ├── core/checklists.py  # base checklists (69 Linux incl. dev-sec, 26 Windows, 39 FortiGate, 22 ESXi)
+│       ├── core/checklists_ext.py # extended checks (CIS Linux/Windows, ESXi 8 STIG, FortiGate) → 124/128/41/57 total
 │       ├── core/orchestrator.py# scan phases, scoring, asset save, report
 │       ├── core/ssh_executor.py# asyncssh wrapper, OS detection, credential wipe
 │       └── models.py           # SQLAlchemy models (users, engagements, findings, assets…)

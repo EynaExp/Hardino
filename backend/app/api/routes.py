@@ -11,7 +11,7 @@ from app.core.auth import (
     verify_password, hash_password, create_access_token, get_current_user,
 )
 from app.core.orchestrator import run_hardening_assessment
-from app.core.checklists import LINUX_CHECKLIST, WINDOWS_CHECKLIST
+from app.core.checklists import get_checklist
 
 router = APIRouter(prefix="/api")
 
@@ -328,10 +328,12 @@ async def list_tools(user: User = Depends(get_current_user)):
 
 @router.get("/tools/checklists")
 async def get_checklists(user: User = Depends(get_current_user)):
-    return {
-        "linux": {"items": len(LINUX_CHECKLIST), "categories": list(set(c["category"] for c in LINUX_CHECKLIST))},
-        "windows": {"items": len(WINDOWS_CHECKLIST), "categories": list(set(c["category"] for c in WINDOWS_CHECKLIST))},
-    }
+    out = {}
+    for os_ in ("linux", "windows", "fortigate", "esxi"):
+        items = get_checklist(os_)
+        out[os_] = {"items": len(items),
+                    "categories": sorted({c["category"] for c in items})}
+    return out
 
 # ─── Dashboard stats ─────────────────────────────────────────────────
 
