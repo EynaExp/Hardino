@@ -59,8 +59,16 @@ class HardeningOrchestrator:
                 engagement.started_at = self._start_time
                 await db.commit()
 
-            # Phase 1: Audit
-            await self._phase_audit()
+            # Phase 1: Audit — a failed connection/audit must fail the whole
+            # scan (never report "completed" with an empty result set)
+            if not await self._phase_audit():
+                async with async_session() as db:
+                    engagement = await db.get(Engagement, self.engagement_id)
+                    if engagement:
+                        engagement.status = "failed"
+                        engagement.completed_at = datetime.utcnow()
+                        await db.commit()
+                return
 
             # Phase 2: Hardening analysis (optional)
             if self.ai_analysis:
@@ -291,7 +299,7 @@ class HardeningOrchestrator:
             await self._add_action(session_id, "error", {}, str(e))
             await self._log_phase("audit", "failed", str(e))
             await self._complete_session(session_id, {"error": str(e)})
-            return
+            return False
 
         output = {
             "os_type": os_type,
@@ -317,6 +325,7 @@ class HardeningOrchestrator:
 
         # Save/update asset
         await self._save_asset(os_type, os_info, open_ports, services, passed, failed)
+        return True
 
     # ─── Phase 2: Hardening Analysis ──────────────────────────────────
 
